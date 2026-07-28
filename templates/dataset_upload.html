@@ -1,0 +1,255 @@
+{{ define "dataset_upload.html" }}
+{{ template "admin_base_start" . }}
+
+<div class="row g-4">
+    <div class="col-12 col-xl-8">
+
+        {{ if .SuccessMessage }}
+        <div
+            class="alert alert-success alert-dismissible fade show"
+            role="alert"
+        >
+            {{ .SuccessMessage }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+            ></button>
+        </div>
+        {{ end }}
+
+        {{ if .ErrorMessage }}
+        <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert"
+        >
+            {{ .ErrorMessage }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+            ></button>
+        </div>
+        {{ end }}
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom p-4">
+                <h2 class="h5 mb-1">
+                    Upload professor review dataset
+                </h2>
+
+                <p class="text-body-secondary mb-0">
+                    Upload a JSON dataset to begin the review-import process.
+                </p>
+            </div>
+
+            <div class="card-body p-4">
+                <form
+                    action="/admin/data/upload"
+                    method="POST"
+                    enctype="multipart/form-data"
+                >
+                    <div class="mb-4">
+                        <label
+                            for="datasetName"
+                            class="form-label fw-semibold"
+                        >
+                            Dataset name
+                        </label>
+
+                        <input
+                            id="datasetName"
+                            name="dataset_name"
+                            type="text"
+                            class="form-control"
+                            placeholder="Rate My Professor Reviews — 5C Colleges"
+                            value="{{ .Form.DatasetName }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-4">
+                        <label
+                            for="sourcePeriod"
+                            class="form-label fw-semibold"
+                        >
+                            Source period
+                        </label>
+
+                        <input
+                            id="sourcePeriod"
+                            name="source_period"
+                            type="text"
+                            class="form-control"
+                            placeholder="Spring 2022"
+                            value="{{ .Form.SourcePeriod }}"
+                        >
+
+                        <div class="form-text">
+                            Identifies when the source data was collected.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label
+                            for="datasetDescription"
+                            class="form-label fw-semibold"
+                        >
+                            Description
+                        </label>
+
+                        <textarea
+                            id="datasetDescription"
+                            name="description"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Add information about the dataset source and contents."
+                        >{{ .Form.Description }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label
+                            for="datasetFile"
+                            class="form-label fw-semibold"
+                        >
+                            Dataset file
+                        </label>
+
+                        <label
+                            for="datasetFile"
+                            class="upload-area d-block"
+                        >
+                            <span class="d-block fs-4 mb-2">
+                                JSON
+                            </span>
+
+                            <span class="d-block fw-semibold mb-1">
+                                Choose a dataset file
+                            </span>
+
+                            <span
+                                id="selectedFileName"
+                                class="d-block small text-body-secondary"
+                            >
+                                Select a JSON file from your computer.
+                            </span>
+                        </label>
+
+                        <input
+                            id="datasetFile"
+                            name="dataset"
+                            type="file"
+                            class="form-control mt-3"
+                            accept=".json,application/json"
+                            required
+                        >
+                    </div>
+
+                    <div
+                        class="d-flex flex-column flex-sm-row justify-content-end gap-2 pt-2"
+                    >
+                        <a
+                            href="/admin/data/documents"
+                            class="btn btn-outline-secondary"
+                        >
+                            Cancel
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary px-4"
+                        >
+                            Upload dataset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">
+                    Import process
+                </h2>
+
+                <div class="d-flex flex-column gap-4">
+                    <div class="status-step">
+                        <div class="fw-semibold">
+                            Upload
+                        </div>
+
+                        <div class="small text-body-secondary">
+                            The original JSON file is saved and registered.
+                        </div>
+                    </div>
+
+                    <div class="status-step">
+                        <div class="fw-semibold">
+                            Validate
+                        </div>
+
+                        <div class="small text-body-secondary">
+                            Review records and required fields are validated.
+                        </div>
+                    </div>
+
+                    <div class="status-step">
+                        <div class="fw-semibold">
+                            Normalize
+                        </div>
+
+                        <div class="small text-body-secondary">
+                            Professor names, courses, ratings, and review values
+                            are normalized.
+                        </div>
+                    </div>
+
+                    <div class="status-step">
+                        <div class="fw-semibold">
+                            Import
+                        </div>
+
+                        <div class="small text-body-secondary">
+                            Reviews are stored and vectorized by Weaviate.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4 mb-0">
+            <div class="fw-semibold mb-1">
+                Supported format
+            </div>
+
+            <div class="small">
+                The initial importer expects the nested professor-review JSON
+                structure used by the 5C dataset.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const datasetFileInput = document.getElementById("datasetFile");
+    const selectedFileName = document.getElementById("selectedFileName");
+
+    datasetFileInput.addEventListener("change", function () {
+        if (this.files.length === 0) {
+            selectedFileName.textContent =
+                "Select a JSON file from your computer.";
+            return;
+        }
+
+        selectedFileName.textContent = this.files[0].name;
+    });
+</script>
+
+{{ template "admin_base_end" . }}
+{{ end }}

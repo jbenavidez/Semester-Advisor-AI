@@ -1,0 +1,107 @@
+services:
+  semester-advisor-ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_CMD: ${APP_CMD:-./cmd/web}
+
+    container_name: semester-advisor-ai-service
+    restart: always
+
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+    environment:
+      WEAVIATE_URL: http://semester-advisor-ai-weaviate:8080
+      OLLAMA_URL: http://semester-advisor-ai-ollama:11434
+      REDIS_URL: redis://semester-advisor-ai-redis:6379
+      UPLOAD_DIR: /app/uploads
+      OPENAI_APIKEY: ${OPENAI_APIKEY}
+
+    volumes:
+      - ./uploads:/app/uploads
+
+    depends_on:
+      - semester-advisor-ai-weaviate
+      - semester-advisor-ai-ollama
+      - semester-advisor-ai-redis
+
+  semester-advisor-ai-redis:
+    image: redis:7-alpine
+    container_name: semester-advisor-ai-redis
+    restart: always
+
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+    volumes:
+      - ./redis-data:/data
+
+    command: redis-server --appendonly yes
+
+  semester-advisor-ai-ollama:
+    image: ollama/ollama:latest
+    container_name: semester-advisor-ai-ollama
+    restart: always
+
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+
+    volumes:
+      - ./ollama-data:/root/.ollama
+
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  semester-advisor-ai-ollama-init:
+    image: ollama/ollama:latest
+    container_name: semester-advisor-ai-ollama-init
+
+    volumes:
+      - ./ollama-data:/root/.ollama
+
+    environment:
+      OLLAMA_HOST: http://semester-advisor-ai-ollama:11434
+
+    depends_on:
+      semester-advisor-ai-ollama:
+        condition: service_healthy
+
+    entrypoint: ["/bin/sh", "-c"]
+
+    command: >
+      echo "Pulling llama3...";
+      ollama pull llama3;
+      echo "llama3 pulled successfully."
+
+    restart: "no"
+
+  semester-advisor-ai-weaviate:
+    image: semitechnologies/weaviate:1.19.0
+    container_name: semester-advisor-ai-weaviate
+    hostname: semester-advisor-ai-weaviate
+    restart: always
+
+    ports:
+      - "${WEAVIATE_PORT:-8081}:8080"
+
+    environment:
+      QUERY_DEFAULTS_LIMIT: 20
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+
+      DEFAULT_VECTORIZER_MODULE: "text2vec-openai"
+      ENABLE_MODULES: "text2vec-openai"
+      OPENAI_EMBEDDING_MODEL: "text-embedding-3-small"
+      OPENAI_APIKEY: "${OPENAI_APIKEY}"
+
+      UUID_ALLOW_NON_UUID: "true"
+      CLUSTER_HOSTNAME: "semester-advisor-ai-weaviate"
+      CLUSTER_JOIN: ""
+
+    volumes:
+      - ./weaviate-data:/var/lib/weaviate
