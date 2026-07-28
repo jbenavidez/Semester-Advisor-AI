@@ -7,7 +7,7 @@ import (
 )
 
 // UploadDoc renders the upload page
-func UploadDoc(c *gin.Context) {
+func (h *Handlers) UploadDoc(c *gin.Context) {
 
 	c.HTML(http.StatusOK, "dataset_upload.html", gin.H{
 		"PageTitle":       "Upload Data",

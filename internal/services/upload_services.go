@@ -18,9 +18,18 @@ type UploadStatusEvent struct {
 	Message      string
 	ErrorMessage string
 }
+
 type UploadService struct {
 	repo             repository.DatabaseRepo
 	uploadJobChan    chan *UploadJob
 	UploadStatusChan chan *UploadStatusEvent
 	wg               sync.WaitGroup
+}
+
+func NewUploadServices(r repository.DatabaseRepo, chunkSize int) *UploadService {
+
+	service := &UploadService{
+		repo: r,
+	}
+	return service
 }

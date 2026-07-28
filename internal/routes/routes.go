@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetUpReoutes(router *gin.Engine) {
+func SetUpRoutes(router *gin.Engine, appHandlers *handlers.Handlers) {
 
-	router.GET("/admin/documents/upload", handlers.UploadDoc)
+	router.GET("/admin/documents/upload", appHandlers.UploadDoc)
 
 }
