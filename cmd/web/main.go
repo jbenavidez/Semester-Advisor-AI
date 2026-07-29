@@ -1,8 +1,10 @@
 package main
 
 import (
+	"os"
 	"semester-advisor-ai/internal/adapters/inbound/http/handlers"
 	"semester-advisor-ai/internal/adapters/inbound/http/routes"
+	storageadapter "semester-advisor-ai/internal/adapters/outbound/storage"
 	weaviateadapter "semester-advisor-ai/internal/adapters/outbound/weaviate"
 	"semester-advisor-ai/internal/application/services"
 
@@ -25,7 +27,9 @@ func main() {
 	}
 	// wire evertyhing up
 	weaviateRepo := weaviateadapter.NewWeaviateDBRepo(weaviateClient)
-	uploadService := services.NewUploadServices(weaviateRepo, chunkSize)
+	uploadDir := os.Getenv("UPLOAD_DIR")
+	fileStorage := storageadapter.NewLocalStorage(uploadDir)
+	uploadService := services.NewUploadServices(weaviateRepo, fileStorage, chunkSize)
 	handlers := handlers.New(uploadService)
 	routes.SetUpRoutes(server, handlers)
 

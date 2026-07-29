@@ -1,58 +1,27 @@
 {{ define "admin_navigation" }}
 <nav class="admin-navigation">
-    <a
-        href="/admin"
-        class="nav-link {{ if eq .ActivePage "dashboard" }}active{{ end }}"
-    >
-        Dashboard
-    </a>
+    <a href="/admin" class="nav-link {{ if eq .ActivePage "dashboard" }}active{{ end }}">Dashboard</a>
 
-    <button
-        class="nav-link data-menu-toggle"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#dataMenu"
-        aria-expanded="{{ if .DataMenuOpen }}true{{ else }}false{{ end }}"
-        aria-controls="dataMenu"
-    >
+    <button class="nav-link data-menu-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#dataMenu" aria-expanded="{{ if .DataMenuOpen }}true{{ else }}false{{ end }}" aria-controls="dataMenu">
         <span>Data</span>
         <span class="menu-chevron">⌄</span>
     </button>
 
-    <div
-        id="dataMenu"
-        class="collapse {{ if .DataMenuOpen }}show{{ end }}"
-    >
+    <div id="dataMenu" class="collapse {{ if .DataMenuOpen }}show{{ end }}">
         <div class="submenu">
-            <a
-                href="/admin/data/documents"
-                class="nav-link submenu-link {{ if eq .ActivePage "documents" }}active{{ end }}"
-            >
-                Documents
-            </a>
-
-            <a
-                href="/admin/data/upload"
-                class="nav-link submenu-link {{ if eq .ActivePage "upload" }}active{{ end }}"
-            >
-                Upload
-            </a>
+            <a href="/admin/data/documents" class="nav-link submenu-link {{ if eq .ActivePage "documents" }}active{{ end }}">Documents</a>
+            <a href="/admin/documents/upload" class="nav-link submenu-link {{ if eq .ActivePage "upload" }}active{{ end }}">Upload</a>
         </div>
     </div>
 </nav>
 {{ end }}
-
 
 {{ define "admin_base_start" }}
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>
         {{ if .PageTitle }}
@@ -62,155 +31,8 @@
         {{ end }}
     </title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-        crossorigin="anonymous"
-    >
-
-    <style>
-        :root {
-            --admin-sidebar-width: 270px;
-            --admin-sidebar-background: #111827;
-            --admin-sidebar-border: #1f2937;
-            --admin-sidebar-text: #d1d5db;
-            --admin-sidebar-muted: #9ca3af;
-            --admin-sidebar-active: #ffffff;
-            --admin-sidebar-active-background: #2563eb;
-        }
-
-        body {
-            min-height: 100vh;
-        }
-
-        .admin-sidebar {
-            width: var(--admin-sidebar-width);
-            min-width: var(--admin-sidebar-width);
-            min-height: 100vh;
-            background: var(--admin-sidebar-background);
-            border-right: 1px solid var(--admin-sidebar-border);
-        }
-
-        .admin-brand {
-            color: #ffffff;
-            text-decoration: none;
-        }
-
-        .admin-brand:hover {
-            color: #ffffff;
-        }
-
-        .admin-brand-subtitle {
-            color: var(--admin-sidebar-muted);
-        }
-
-        .admin-navigation {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-
-        .admin-navigation .nav-link {
-            display: flex;
-            width: 100%;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem 1rem;
-            color: var(--admin-sidebar-text);
-            background: transparent;
-            border: 0;
-            border-radius: 0.5rem;
-            text-align: left;
-            text-decoration: none;
-            transition:
-                background-color 0.15s ease-in-out,
-                color 0.15s ease-in-out;
-        }
-
-        .admin-navigation .nav-link:hover {
-            color: #ffffff;
-            background: #1f2937;
-        }
-
-        .admin-navigation .nav-link.active {
-            color: var(--admin-sidebar-active);
-            background: var(--admin-sidebar-active-background);
-        }
-
-        .submenu {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            padding: 0.35rem 0 0.35rem 1rem;
-        }
-
-        .admin-navigation .submenu-link {
-            padding: 0.6rem 1rem;
-            font-size: 0.925rem;
-        }
-
-        .menu-chevron {
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .data-menu-toggle[aria-expanded="true"] .menu-chevron {
-            transform: rotate(180deg);
-        }
-
-        .admin-main {
-            min-width: 0;
-        }
-
-        .admin-header {
-            min-height: 72px;
-        }
-
-        .admin-content {
-            width: 100%;
-            max-width: 1440px;
-            margin: 0 auto;
-        }
-
-        .admin-offcanvas {
-            width: var(--admin-sidebar-width) !important;
-            color: #ffffff;
-            background: var(--admin-sidebar-background);
-        }
-
-        .admin-offcanvas .btn-close {
-            filter: invert(1);
-        }
-
-        .upload-area {
-            padding: 2.5rem 1.5rem;
-            border: 2px dashed #cbd5e1;
-            border-radius: 0.75rem;
-            background: #f8fafc;
-            text-align: center;
-        }
-
-        .upload-area:hover {
-            border-color: #2563eb;
-            background: #eff6ff;
-        }
-
-        .status-step {
-            position: relative;
-            padding-left: 1.75rem;
-        }
-
-        .status-step::before {
-            position: absolute;
-            top: 0.4rem;
-            left: 0;
-            width: 0.7rem;
-            height: 0.7rem;
-            content: "";
-            background: #2563eb;
-            border-radius: 50%;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="/static/css/style.css" rel="stylesheet">
 </head>
 
 <body class="bg-body-tertiary">
@@ -220,49 +42,27 @@
     <aside class="admin-sidebar d-none d-lg-flex flex-column p-3">
         <div class="mb-4 px-2">
             <a href="/admin" class="admin-brand">
-                <div class="fs-5 fw-semibold">
-                    Semester Advisor AI
-                </div>
-
-                <div class="admin-brand-subtitle small">
-                    Administration
-                </div>
+                <div class="fs-5 fw-semibold">Semester Advisor AI</div>
+                <div class="admin-brand-subtitle small">Administration</div>
             </a>
         </div>
 
         {{ template "admin_navigation" . }}
 
         <div class="mt-auto border-top border-secondary pt-3 px-2">
-            <div class="small text-secondary">
-                Admin Console
-            </div>
+            <div class="small text-secondary">Admin Console</div>
         </div>
     </aside>
 
     <!-- Mobile sidebar -->
-    <div
-        id="adminSidebar"
-        class="offcanvas offcanvas-start admin-offcanvas d-lg-none"
-        tabindex="-1"
-        aria-labelledby="adminSidebarLabel"
-    >
+    <div id="adminSidebar" class="offcanvas offcanvas-start admin-offcanvas d-lg-none" tabindex="-1" aria-labelledby="adminSidebarLabel">
         <div class="offcanvas-header border-bottom border-secondary">
             <div>
-                <h5 id="adminSidebarLabel" class="offcanvas-title">
-                    Semester Advisor AI
-                </h5>
-
-                <div class="small text-secondary">
-                    Administration
-                </div>
+                <h5 id="adminSidebarLabel" class="offcanvas-title">Semester Advisor AI</h5>
+                <div class="small text-secondary">Administration</div>
             </div>
 
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="offcanvas"
-                aria-label="Close"
-            ></button>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
 
         <div class="offcanvas-body">
@@ -272,53 +72,31 @@
 
     <!-- Main area -->
     <div class="admin-main flex-grow-1">
-        <header
-            class="admin-header bg-white border-bottom d-flex align-items-center px-3 px-lg-4"
-        >
-            <button
-                type="button"
-                class="btn btn-outline-secondary d-lg-none me-3"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#adminSidebar"
-                aria-controls="adminSidebar"
-                aria-label="Open administration menu"
-            >
-                ☰
-            </button>
+        <header class="admin-header bg-white border-bottom d-flex align-items-center px-3 px-lg-4">
+            <button type="button" class="btn btn-outline-secondary d-lg-none me-3" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar" aria-label="Open administration menu">☰</button>
 
             <div>
-                <h1 class="h4 mb-0">
-                    {{ .PageTitle }}
-                </h1>
+                <h1 class="h4 mb-0">{{ .PageTitle }}</h1>
 
                 {{ if .PageDescription }}
-                <div class="small text-body-secondary mt-1">
-                    {{ .PageDescription }}
-                </div>
+                <div class="small text-body-secondary mt-1">{{ .PageDescription }}</div>
                 {{ end }}
             </div>
 
             <div class="ms-auto">
-                <span class="badge text-bg-light border">
-                    Admin
-                </span>
+                <span class="badge text-bg-light border">Admin</span>
             </div>
         </header>
 
         <main class="admin-content p-3 p-md-4">
 {{ end }}
 
-
 {{ define "admin_base_end" }}
         </main>
     </div>
 </div>
 
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-    crossorigin="anonymous"
-></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>
 {{ end }}

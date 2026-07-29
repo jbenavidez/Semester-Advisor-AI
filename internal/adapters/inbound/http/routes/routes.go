@@ -7,7 +7,7 @@ import (
 )
 
 func SetUpRoutes(router *gin.Engine, appHandlers *handlers.Handlers) {
-
+	router.Static("/static", "./static")
 	router.GET("/admin/documents/upload", appHandlers.UploadDoc)
-
+	router.POST("/admin/documents/upload", appHandlers.ProcesssDoc)
 }
