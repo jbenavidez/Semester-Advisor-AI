@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"semester-advisor-ai/internal/handlers"
+	"semester-advisor-ai/internal/adapters/inbound/http/handlers"
 
 	"github.com/gin-gonic/gin"
 )

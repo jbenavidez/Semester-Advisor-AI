@@ -1,6 +1,6 @@
 package handlers
 
-import "semester-advisor-ai/internal/services"
+import "semester-advisor-ai/internal/application/services"
 
 type Handlers struct {
 	uploadService *services.UploadService

@@ -1,11 +1,10 @@
 package main
 
 import (
-	"semester-advisor-ai/internal/db"
-	"semester-advisor-ai/internal/handlers"
-	dbrepo "semester-advisor-ai/internal/repository/db_repo"
-	"semester-advisor-ai/internal/routes"
-	"semester-advisor-ai/internal/services"
+	"semester-advisor-ai/internal/adapters/inbound/http/handlers"
+	"semester-advisor-ai/internal/adapters/inbound/http/routes"
+	weaviateadapter "semester-advisor-ai/internal/adapters/outbound/weaviate"
+	"semester-advisor-ai/internal/application/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,12 +19,12 @@ func main() {
 	server := gin.Default()
 	server.LoadHTMLGlob("templates/*.html")
 	// connect to db
-	weaviateClient, err := db.NewWeaviateClient()
+	weaviateClient, err := weaviateadapter.NewWeaviateClient()
 	if err != nil {
 		panic(err)
 	}
 	// wire evertyhing up
-	weaviateRepo := dbrepo.NewWeaviateDBRepo(weaviateClient)
+	weaviateRepo := weaviateadapter.NewWeaviateDBRepo(weaviateClient)
 	uploadService := services.NewUploadServices(weaviateRepo, chunkSize)
 	handlers := handlers.New(uploadService)
 	routes.SetUpRoutes(server, handlers)
