@@ -63,3 +63,17 @@ func (h *Handlers) ProcesssDoc(c *gin.Context) {
 	// TODO render the user to list
 
 }
+
+func (h *Handlers) GetDocuments(c *gin.Context) {
+
+	files, err := h.uploadService.GetAllUploadedFile()
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	fmt.Println("gondor")
+	c.HTML(http.StatusOK, "documents.html", gin.H{
+		"PageTitle":     "Uploaded documents",
+		"UploadedFiles": files.UploadedFiles,
+	})
+}

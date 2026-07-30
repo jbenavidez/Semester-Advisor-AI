@@ -148,3 +148,40 @@ func (s *UploadService) SaveUploadedFile(ctx context.Context, uploadDataset dto.
 	return nil, nil
 
 }
+
+func (s *UploadService) GetAllUploadedFile() (*dto.UploadFileResponse, error) {
+	// Get all dfiles
+	files, err := s.repo.GetAllUploadFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	uploadedFiles := make([]dto.UploadedFileDTO, len(files))
+
+	for i := range files {
+		file := files[i]
+		uploadedFiles[i] = dto.UploadedFileDTO{
+			ID:               file.ID,
+			OriginalFileName: file.OriginalFileName,
+			StoredFileName:   file.StoredFileName,
+			FilePath:         file.FilePath,
+			Description:      file.Description,
+			ContentType:      file.ContentType,
+			Size:             file.Size,
+			DatasetName:      file.DatasetName,
+			SourcePeriod:     file.SourcePeriod,
+			Status:           file.Status,
+			ErrorMessage:     file.ErrorMessage,
+			TotalReviews:     file.TotalReviews,
+			ProcessedReviews: file.ProcessedReviews,
+			FailedReviews:    file.FailedReviews,
+			CreatedAt:        file.CreatedAt.Format("2006-01-02 15:04"),
+			UpdatedAt:        file.UpdatedAt.Format("2006-01-02 15:04"),
+		}
+	}
+	//set response
+	res := &dto.UploadFileResponse{
+		UploadedFiles: uploadedFiles,
+	}
+	return res, nil
+}

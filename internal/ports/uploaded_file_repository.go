@@ -8,4 +8,5 @@ type UploadedFileRepository interface {
 	SaveFile()
 	SaveFileMetaData(storedFile *domain.UploadedFile) (*domain.UploadedFile, error)
 	GetFileByName(string) (*domain.UploadedFile, bool, error)
+	GetAllUploadFiles() ([]domain.UploadedFile, error)
 }

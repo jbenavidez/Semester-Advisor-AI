@@ -139,6 +139,52 @@ func (m *WeaviateDBRepo) SaveFileMetaData(uploadedFile *domain.UploadedFile) (*d
 	return uploadedFile, nil
 }
 
+func (m *WeaviateDBRepo) GetAllUploadFiles() ([]domain.UploadedFile, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	res, err := m.DB.Data().ObjectsGetter().
+		WithClassName(UploadedFilesClassName).
+		Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve uploaded files from Weaviate: %w", err)
+	}
+
+	uploadedFiles := make([]domain.UploadedFile, 0, len(res))
+
+	for i := range res {
+		obj := res[i]
+
+		props, ok := obj.Properties.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		uploadedFile := domain.UploadedFile{
+			ID:               obj.ID.String(),
+			OriginalFileName: getStringProperty(props, "originalFileName"),
+			StoredFileName:   getStringProperty(props, "storedFileName"),
+			FilePath:         getStringProperty(props, "filePath"),
+			Description:      getStringProperty(props, "description"),
+			ContentType:      getStringProperty(props, "contentType"),
+			Size:             getInt64Property(props, "size"),
+			DatasetName:      getStringProperty(props, "datasetName"),
+			SourcePeriod:     getStringProperty(props, "sourcePeriod"),
+			Status:           getStringProperty(props, "status"),
+			ErrorMessage:     getStringProperty(props, "errorMessage"),
+			TotalReviews:     getIntProperty(props, "totalReviews"),
+			ProcessedReviews: getIntProperty(props, "processedReviews"),
+			FailedReviews:    getIntProperty(props, "failedReviews"),
+			CreatedAt:        getTimeProperty(props, "createdAt"),
+			UpdatedAt:        getTimeProperty(props, "updatedAt"),
+		}
+
+		uploadedFiles = append(uploadedFiles, uploadedFile)
+	}
+
+	return uploadedFiles, nil
+}
+
 // HELPERS
 func getGraphQLID(props map[string]interface{}) string {
 	additional, ok := props["_additional"].(map[string]interface{})
@@ -198,4 +244,22 @@ func getTimeProperty(props map[string]interface{}, key string) time.Time {
 	}
 
 	return parsedTime
+}
+
+func getIntProperty(props map[string]interface{}, key string) int {
+	value, ok := props[key]
+	if !ok || value == nil {
+		return 0
+	}
+
+	switch number := value.(type) {
+	case int:
+		return number
+	case int64:
+		return int(number)
+	case float64:
+		return int(number)
+	default:
+		return 0
+	}
 }

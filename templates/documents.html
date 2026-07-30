@@ -1,0 +1,108 @@
+{{ define "documents.html" }}
+{{ template "admin_base_start" . }}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Uploaded Datasets</h1>
+            <p class="text-muted mb-0">View and manage uploaded professor-review datasets.</p>
+        </div>
+
+        <a href="/admin/documents/upload" class="btn btn-primary">Upload Dataset</a>
+    </div>
+
+    {{ if .UploadedFiles }}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="px-4 py-3">Dataset</th>
+                            <th class="py-3">File</th>
+                            <th class="py-3">Source Period</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Reviews</th>
+                            <th class="py-3">Size</th>
+                            <th class="py-3">Uploaded</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {{ range .UploadedFiles }}
+                        <tr>
+                            <td class="px-4 py-3">
+                                <div class="fw-semibold">{{ .DatasetName }}</div>
+
+                                {{ if .Description }}
+                                <div class="small text-muted">{{ .Description }}</div>
+                                {{ end }}
+                            </td>
+
+                            <td class="py-3">
+                                <div>{{ .OriginalFileName }}</div>
+                                <div class="small text-muted">{{ .ContentType }}</div>
+                            </td>
+
+                            <td class="py-3">
+                                {{ if .SourcePeriod }}
+                                {{ .SourcePeriod }}
+                                {{ else }}
+                                <span class="text-muted">Not provided</span>
+                                {{ end }}
+                            </td>
+
+                            <td class="py-3">
+                                {{ if eq .Status "completed" }}
+                                <span class="badge text-bg-success">Completed</span>
+                                {{ else if eq .Status "processing" }}
+                                <span class="badge text-bg-primary">Processing</span>
+                                {{ else if eq .Status "failed" }}
+                                <span class="badge text-bg-danger">Failed</span>
+                                {{ else }}
+                                <span class="badge text-bg-warning">Pending</span>
+                                {{ end }}
+
+                                {{ if .ErrorMessage }}
+                                <div class="small text-danger mt-1">{{ .ErrorMessage }}</div>
+                                {{ end }}
+                            </td>
+
+                            <td class="py-3">
+                                <div class="small"><strong>Total:</strong> {{ .TotalReviews }}</div>
+                                <div class="small text-success"><strong>Processed:</strong> {{ .ProcessedReviews }}</div>
+
+                                {{ if gt .FailedReviews 0 }}
+                                <div class="small text-danger"><strong>Failed:</strong> {{ .FailedReviews }}</div>
+                                {{ end }}
+                            </td>
+
+                            <td class="py-3">{{ .Size }} bytes</td>
+
+                            <td class="py-3">
+                                <div>{{ .CreatedAt }}</div>
+
+                                {{ if .UpdatedAt }}
+                                <div class="small text-muted">Updated {{ .UpdatedAt }}</div>
+                                {{ end }}
+                            </td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {{ else }}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <h2 class="h5">No datasets uploaded</h2>
+            <p class="text-muted">Upload your first professor-review dataset to begin processing it.</p>
+            <a href="/admin/documents/upload" class="btn btn-primary">Upload Dataset</a>
+        </div>
+    </div>
+    {{ end }}
+</div>
+
+{{ template "admin_base_end" . }}
+{{ end }}
