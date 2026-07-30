@@ -1,2 +1,2 @@
-# semester-advisor-AI
+# Semester-Advisor-AI
 WIP
