@@ -60,7 +60,7 @@ func (h *Handlers) ProcesssDoc(c *gin.Context) {
 		return
 	}
 	fmt.Println("file Uploaded")
-	// TODO render the user to list
+	c.Redirect(http.StatusSeeOther, "/admin/documents")
 
 }
 

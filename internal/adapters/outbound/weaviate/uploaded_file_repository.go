@@ -185,6 +185,42 @@ func (m *WeaviateDBRepo) GetAllUploadFiles() ([]domain.UploadedFile, error) {
 	return uploadedFiles, nil
 }
 
+func (m *WeaviateDBRepo) UpdateFile(uploadedFile *domain.UploadedFile) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	uploadedFile.UpdatedAt = time.Now().UTC()
+
+	fileProperties := map[string]interface{}{
+		"originalFileName": uploadedFile.OriginalFileName,
+		"storedFileName":   uploadedFile.StoredFileName,
+		"filePath":         uploadedFile.FilePath,
+		"description":      uploadedFile.Description,
+		"contentType":      uploadedFile.ContentType,
+		"size":             uploadedFile.Size,
+		"datasetName":      uploadedFile.DatasetName,
+		"sourcePeriod":     uploadedFile.SourcePeriod,
+		"status":           uploadedFile.Status,
+		"errorMessage":     uploadedFile.ErrorMessage,
+		"totalReviews":     uploadedFile.TotalReviews,
+		"processedReviews": uploadedFile.ProcessedReviews,
+		"failedReviews":    uploadedFile.FailedReviews,
+		"updatedAt":        uploadedFile.UpdatedAt.Format(time.RFC3339),
+	}
+
+	err := m.DB.Data().Updater().
+		WithMerge().
+		WithID(uploadedFile.ID).
+		WithClassName(UploadedFilesClassName).
+		WithProperties(fileProperties).
+		Do(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to update uploaded file: %w", err)
+	}
+
+	return nil
+}
+
 // HELPERS
 func getGraphQLID(props map[string]interface{}) string {
 	additional, ok := props["_additional"].(map[string]interface{})

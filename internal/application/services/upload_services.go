@@ -19,7 +19,6 @@ type UploadJob struct {
 }
 
 type UploadStatusEvent struct {
-	SessionID    string
 	UploadedFile *domain.UploadedFile
 	Status       string
 	Message      string
@@ -29,16 +28,18 @@ type UploadStatusEvent struct {
 type UploadService struct {
 	repo             ports.UploadedFileRepository
 	storage          ports.FileStorage
+	jsonProcessor    ports.DatasetProcessor
 	uploadJobChan    chan *UploadJob
 	UploadStatusChan chan *UploadStatusEvent
 	wg               sync.WaitGroup
 }
 
-func NewUploadServices(r ports.UploadedFileRepository, s ports.FileStorage, chunkSize int) *UploadService {
+func NewUploadServices(r ports.UploadedFileRepository, s ports.FileStorage, jsonProcessor ports.DatasetProcessor, chunkSize int) *UploadService {
 
 	service := &UploadService{
 		repo:             r,
 		storage:          s,
+		jsonProcessor:    jsonProcessor,
 		uploadJobChan:    make(chan *UploadJob),
 		UploadStatusChan: make(chan *UploadStatusEvent),
 	}
@@ -64,7 +65,6 @@ func (s *UploadService) processFileWorker() {
 			fmt.Println("failed to process file:", err)
 			// Send failed event to notification chan.
 			s.UploadStatusChan <- &UploadStatusEvent{
-				SessionID:    uploadJob.SessionID,
 				UploadedFile: uploadJob.UploadedFile,
 				Status:       uploadJob.UploadedFile.Status,
 				Message:      "failed to process file",
@@ -73,9 +73,9 @@ func (s *UploadService) processFileWorker() {
 
 			continue
 		}
+		fmt.Println("valinor_03", uploadJob.UploadedFile.Status)
 		// Send success event to notification chan.
 		s.UploadStatusChan <- &UploadStatusEvent{
-			SessionID:    uploadJob.SessionID,
 			UploadedFile: uploadJob.UploadedFile,
 			Status:       uploadJob.UploadedFile.Status,
 			Message:      "file processed successfully",
@@ -87,7 +87,7 @@ func (s *UploadService) processFileWorker() {
 func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *domain.UploadedFile) error {
 	file, err := os.Open(uploadedFile.FilePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open uploaded file: %w", err)
 	}
 	defer func() {
 		_ = file.Close()
@@ -96,16 +96,39 @@ func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *domain.Up
 	ext := strings.ToLower(filepath.Ext(uploadedFile.FilePath))
 
 	switch ext {
-	case ".csv":
-		// Mark file as processing
+	case ".json":
 		uploadedFile.Status = "processing"
 		uploadedFile.ErrorMessage = ""
-		// to be continue
-		fmt.Println("gondor", uploadedFile)
+		uploadedFile.UpdatedAt = time.Now().UTC()
+
+		if err := s.repo.UpdateFile(uploadedFile); err != nil {
+			return fmt.Errorf("failed to update uploaded file status to processing: %w", err)
+		}
+
+		if err := s.jsonProcessor.Process(ctx, file, uploadedFile); err != nil {
+			uploadedFile.Status = "failed"
+			uploadedFile.ErrorMessage = err.Error()
+			uploadedFile.UpdatedAt = time.Now().UTC()
+
+			if updateErr := s.repo.UpdateFile(uploadedFile); updateErr != nil {
+				return fmt.Errorf("failed to process JSON file: %w; failed to update file status: %v", err, updateErr)
+			}
+
+			return fmt.Errorf("failed to process JSON file: %w", err)
+		}
+
+		uploadedFile.Status = "processed"
+		uploadedFile.ErrorMessage = ""
+		uploadedFile.UpdatedAt = time.Now().UTC()
+
+		if err := s.repo.UpdateFile(uploadedFile); err != nil {
+			return fmt.Errorf("failed to update uploaded file status to processed: %w", err)
+		}
 
 	default:
 		return fmt.Errorf("unsupported file extension: %s", ext)
 	}
+
 	return nil
 }
 
@@ -144,8 +167,14 @@ func (s *UploadService) SaveUploadedFile(ctx context.Context, uploadDataset dto.
 		return nil, err
 	}
 	fmt.Println("valinor", savedFile)
+	//set uploadJob
+	uploadJob := &UploadJob{
+		UploadedFile: uploadedFile,
+	}
+	//send upload-job to chan
+	s.uploadJobChan <- uploadJob
 
-	return nil, nil
+	return storedFile, nil
 
 }
 
