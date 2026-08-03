@@ -36,7 +36,7 @@ func (j *JSONProcessor) Process(ctx context.Context, reader io.Reader, uploadedF
 	for _, group := range reviewGroups {
 		uploadedFile.TotalReviews += len(group)
 	}
-
+	fmt.Printf("******** Total reviews to insert %v ********", len(reviewGroups))
 	for _, group := range reviewGroups {
 		for _, review := range group {
 			if err := ctx.Err(); err != nil {
@@ -77,10 +77,17 @@ func (j *JSONProcessor) Process(ctx context.Context, reader io.Reader, uploadedF
 			}
 
 			professorReview := &domain.ProfessorReview{
-				UploadedFileID: uploadedFile.ID, CourseID: courseID, Quality: quality, Difficulty: difficulty,
-				ForCredit: forCredit, WouldTakeAgain: wouldTakeAgain, Grade: strings.TrimSpace(review.Grade),
-				Textbook: textbook, Comment: strings.TrimSpace(review.Comment), Professor: professor,
-				Department: strings.TrimSpace(review.Department),
+				UploadedFileID: uploadedFile.ID,
+				CourseID:       courseID,
+				Quality:        quality,
+				Difficulty:     difficulty,
+				ForCredit:      forCredit,
+				WouldTakeAgain: wouldTakeAgain,
+				Grade:          strings.TrimSpace(review.Grade),
+				Textbook:       textbook,
+				Comment:        strings.TrimSpace(review.Comment),
+				Professor:      professor,
+				Department:     strings.TrimSpace(review.Department),
 			}
 
 			if err := j.repo.SaveReview(ctx, professorReview); err != nil {
@@ -89,15 +96,16 @@ func (j *JSONProcessor) Process(ctx context.Context, reader io.Reader, uploadedF
 			}
 
 			uploadedFile.ProcessedReviews++
+
 		}
 	}
-
+	fmt.Println("******** FIle Proceesed ********")
 	return nil
 }
 
 func parseOptionalBoolean(value string) (*bool, error) {
 	switch strings.ToLower(strings.TrimSpace(value)) {
-	case "":
+	case "", "n/a", "na", "unknown", "not applicable":
 		return nil, nil
 	case "yes", "true", "1":
 		result := true

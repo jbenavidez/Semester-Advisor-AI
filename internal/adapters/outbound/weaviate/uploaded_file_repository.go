@@ -258,6 +258,7 @@ func (m *WeaviateDBRepo) SaveReview(ctx context.Context, review *domain.Professo
 	}
 
 	review.ID = response.Object.ID.String()
+	fmt.Println("saved record", review.CourseID)
 
 	return nil
 }
