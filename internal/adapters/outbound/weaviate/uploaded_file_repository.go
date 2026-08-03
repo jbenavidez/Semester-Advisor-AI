@@ -216,6 +216,7 @@ func (m *WeaviateDBRepo) UpdateFile(uploadedFile *domain.UploadedFile) error {
 		WithProperties(fileProperties).
 		Do(ctx)
 	if err != nil {
+
 		return fmt.Errorf("failed to update uploaded file: %w", err)
 	}
 

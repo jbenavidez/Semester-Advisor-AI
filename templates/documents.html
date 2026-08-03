@@ -53,8 +53,8 @@
                             </td>
 
                             <td class="py-3">
-                                {{ if eq .Status "completed" }}
-                                <span class="badge text-bg-success">Completed</span>
+                                {{ if eq .Status "processed" }}
+                                <span class="badge text-bg-success">Processed</span>
                                 {{ else if eq .Status "processing" }}
                                 <span class="badge text-bg-primary">Processing</span>
                                 {{ else if eq .Status "failed" }}

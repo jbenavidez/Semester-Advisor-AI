@@ -120,7 +120,7 @@ func (s *UploadService) ProcessFile(ctx context.Context, uploadedFile *domain.Up
 		uploadedFile.Status = "processed"
 		uploadedFile.ErrorMessage = ""
 		uploadedFile.UpdatedAt = time.Now().UTC()
-
+		fmt.Println("gondor_update_status", uploadedFile.Status)
 		if err := s.repo.UpdateFile(uploadedFile); err != nil {
 			return fmt.Errorf("failed to update uploaded file status to processed: %w", err)
 		}
