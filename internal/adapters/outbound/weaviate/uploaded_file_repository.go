@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	timeout                = time.Second * 3
-	UploadedFilesClassName = "UploadedFile"
-	DocumentClassName      = "Document"
+	timeout                   = time.Second * 3
+	UploadedFilesClassName    = "UploadedFile"
+	DocumentClassName         = "Document"
+	ProfessorReviewsClassName = "ProfessorReview"
 )
 
 type WeaviateDBRepo struct {
@@ -217,6 +218,46 @@ func (m *WeaviateDBRepo) UpdateFile(uploadedFile *domain.UploadedFile) error {
 	if err != nil {
 		return fmt.Errorf("failed to update uploaded file: %w", err)
 	}
+
+	return nil
+}
+
+func (m *WeaviateDBRepo) SaveReview(ctx context.Context, review *domain.ProfessorReview) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	reviewProperties := map[string]interface{}{
+		"uploadedFileId": review.UploadedFileID,
+		"courseId":       review.CourseID,
+		"quality":        review.Quality,
+		"difficulty":     review.Difficulty,
+		"grade":          review.Grade,
+		"comment":        review.Comment,
+		"professor":      review.Professor,
+		"department":     review.Department,
+	}
+
+	if review.ForCredit != nil {
+		reviewProperties["forCredit"] = *review.ForCredit
+	}
+
+	if review.WouldTakeAgain != nil {
+		reviewProperties["wouldTakeAgain"] = *review.WouldTakeAgain
+	}
+
+	if review.Textbook != nil {
+		reviewProperties["textbook"] = *review.Textbook
+	}
+
+	response, err := m.DB.Data().Creator().
+		WithClassName(ProfessorReviewsClassName).
+		WithProperties(reviewProperties).
+		Do(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to save review for professor %q and course %q: %w", review.Professor, review.CourseID, err)
+	}
+
+	review.ID = response.Object.ID.String()
 
 	return nil
 }
