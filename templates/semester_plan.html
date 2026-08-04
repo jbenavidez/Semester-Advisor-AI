@@ -1,0 +1,159 @@
+{{ define "semester_plan.html" }}
+{{ template "public_base_start" . }}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="mb-4">
+                <h1 class="h3 mb-1">Build Your Semester Plan</h1>
+                <p class="text-muted mb-0">Enter the courses and professors you are considering for this semester.</p>
+            </div>
+
+            <form action="/semester/advisor" method="POST">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h2 class="h5 mb-0">Semester Information</h2>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="semester_name" class="form-label">Semester</label>
+                                <input type="text" id="semester_name" name="semester_name" class="form-control" placeholder="Fall 2026" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="student_goal" class="form-label">Primary Goal</label>
+                                <select id="student_goal" name="student_goal" class="form-select">
+                                    <option value="">Select a goal</option>
+                                    <option value="balanced">Balanced semester</option>
+                                    <option value="easier">Lower difficulty</option>
+                                    <option value="quality">Highest-rated professors</option>
+                                    <option value="workload">Manageable workload</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <h2 class="h5 mb-1">Courses</h2>
+                            <p class="small text-muted mb-0">Add each course and professor in your planned schedule.</p>
+                        </div>
+
+                        <button type="button" id="add-course-button" class="btn btn-outline-primary btn-sm">Add Course</button>
+                    </div>
+
+                    <div class="card-body">
+                        <div id="course-list">
+                            <div class="course-row border rounded p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="h6 course-title mb-0">Course 1</h3>
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-course-button d-none">Remove</button>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Course ID</label>
+                                        <input type="text" name="course_id" class="form-control" placeholder="CS51" required>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label class="form-label">Course Name</label>
+                                        <input type="text" name="course_name" class="form-control" placeholder="Introduction to Computer Science">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Professor Name</label>
+                                        <input type="text" name="professor" class="form-control" placeholder="Arthur Lee" required>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label class="form-label">Department</label>
+                                        <input type="text" name="department" class="form-control" placeholder="Computer Science">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Credits</label>
+                                        <input type="number" name="credits" class="form-control" min="0" step="0.5" placeholder="4">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Course Type</label>
+                                        <select name="course_type" class="form-select">
+                                            <option value="">Select type</option>
+                                            <option value="major">Major requirement</option>
+                                            <option value="general">General education</option>
+                                            <option value="elective">Elective</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label">Notes</label>
+                                        <textarea name="course_notes" class="form-control" rows="2" placeholder="Optional details about workload, schedule, or concerns"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <label for="semester_notes" class="form-label">Additional Semester Notes</label>
+                        <textarea id="semester_notes" name="semester_notes" class="form-control" rows="4" placeholder="Tell the advisor about work commitments, preferred workload, difficult subjects, or schedule restrictions"></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                    <button type="submit" class="btn btn-primary">Analyze Semester</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const courseList = document.getElementById("course-list");
+    const addCourseButton = document.getElementById("add-course-button");
+
+    function updateCourseRows() {
+        const rows = courseList.querySelectorAll(".course-row");
+
+        rows.forEach(function (row, index) {
+            row.querySelector(".course-title").textContent = "Course " + (index + 1);
+            row.querySelector(".remove-course-button").classList.toggle("d-none", rows.length === 1);
+        });
+    }
+
+    addCourseButton.addEventListener("click", function () {
+        const firstRow = courseList.querySelector(".course-row");
+        const newRow = firstRow.cloneNode(true);
+
+        newRow.querySelectorAll("input, select, textarea").forEach(function (field) {
+            field.value = "";
+        });
+
+        courseList.appendChild(newRow);
+        updateCourseRows();
+    });
+
+    courseList.addEventListener("click", function (event) {
+        if (!event.target.classList.contains("remove-course-button")) {
+            return;
+        }
+
+        event.target.closest(".course-row").remove();
+        updateCourseRows();
+    });
+
+    updateCourseRows();
+});
+</script>
+
+{{ template "public_base_end" . }}
+{{ end }}

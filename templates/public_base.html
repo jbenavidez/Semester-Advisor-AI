@@ -1,0 +1,44 @@
+{{ define "public_base_start" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .PageTitle }} | Semester Advisor AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">Semester Advisor AI</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNavigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div id="publicNavigation" class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/semester">Semester Advisor</a></li>
+                <li class="nav-item"><a class="nav-link" href="/planner">Semester Planner</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main>
+{{ end }}
+
+{{ define "public_base_end" }}
+</main>
+
+<footer class="border-top bg-white mt-5">
+    <div class="container py-4 text-center text-muted">
+        <small>Semester Advisor AI</small>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{{ end }}
