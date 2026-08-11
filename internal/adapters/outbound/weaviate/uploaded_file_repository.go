@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"semester-advisor-ai/internal/domain"
-	"semester-advisor-ai/internal/ports"
 	"time"
 
 	"github.com/weaviate/weaviate-go-client/v5/weaviate"
@@ -23,7 +22,7 @@ type WeaviateDBRepo struct {
 	DB *weaviate.Client
 }
 
-func NewWeaviateDBRepo(db *weaviate.Client) ports.UploadedFileRepository {
+func NewWeaviateDBRepo(db *weaviate.Client) *WeaviateDBRepo {
 	return &WeaviateDBRepo{
 		DB: db,
 	}

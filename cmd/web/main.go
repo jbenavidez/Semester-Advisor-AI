@@ -32,7 +32,8 @@ func main() {
 	fileStorage := storageadapter.NewLocalStorage(uploadDir)
 	fileProcessor := processing.NewJSONProcessor(weaviateRepo)
 	uploadService := services.NewUploadServices(weaviateRepo, fileStorage, fileProcessor, chunkSize)
-	handlers := handlers.New(uploadService)
+	plannerServices := services.NewSemesterPlannerServices(weaviateRepo)
+	handlers := handlers.New(uploadService, plannerServices)
 	routes.SetUpRoutes(server, handlers)
 
 	if err := server.Run(":8080"); err != nil {
