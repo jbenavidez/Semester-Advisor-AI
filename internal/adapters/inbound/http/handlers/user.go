@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"semester-advisor-ai/internal/adapters/inbound/http/dto"
+	"semester-advisor-ai/internal/domain"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -27,11 +27,11 @@ func (h *Handlers) PlanSemester(c *gin.Context) {
 	notes := c.PostFormArray("course_notes")
 
 	// create list
-	courses := make([]dto.Course, len(courseIDs))
+	courses := make([]domain.Course, len(courseIDs))
 
 	for i := range courseIDs {
 		credit, _ := strconv.ParseFloat(credits[i], 64)
-		course := dto.Course{
+		course := domain.Course{
 			CourseID:      courseIDs[i],
 			CourseName:    courseNames[i],
 			ProfessorName: professors[i],
@@ -43,7 +43,12 @@ func (h *Handlers) PlanSemester(c *gin.Context) {
 		courses[i] = course
 	}
 	//
-	plan := h.plannerSevice.PlanSemester(courses)
+	//plan := h.plannerSevice.PlanSemester()(courses)
+	plan, err := h.semesterAdvisor.AnalyzeSemester(c.Request.Context(), courses)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
 	fmt.Println("complete_gondor", plan)
 
 	// Todo: return result

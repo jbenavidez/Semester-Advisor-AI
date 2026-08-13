@@ -4,6 +4,7 @@ import (
 	"os"
 	"semester-advisor-ai/internal/adapters/inbound/http/handlers"
 	"semester-advisor-ai/internal/adapters/inbound/http/routes"
+	"semester-advisor-ai/internal/adapters/outbound/llm"
 	"semester-advisor-ai/internal/adapters/outbound/processing"
 	storageadapter "semester-advisor-ai/internal/adapters/outbound/storage"
 	weaviateadapter "semester-advisor-ai/internal/adapters/outbound/weaviate"
@@ -26,14 +27,20 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	llmClient, err := llm.NewOllamaClient()
+	if err != nil {
+		panic(err)
+	}
+	ragEngine := llm.NewRag(llmClient)
 	// wire evertyhing up
 	weaviateRepo := weaviateadapter.NewWeaviateDBRepo(weaviateClient)
 	uploadDir := os.Getenv("UPLOAD_DIR")
 	fileStorage := storageadapter.NewLocalStorage(uploadDir)
 	fileProcessor := processing.NewJSONProcessor(weaviateRepo)
 	uploadService := services.NewUploadServices(weaviateRepo, fileStorage, fileProcessor, chunkSize)
+	semesterAdvisorService := services.NewSemesterAdvisorService(ragEngine, weaviateRepo)
 	plannerServices := services.NewSemesterPlannerServices(weaviateRepo)
-	handlers := handlers.New(uploadService, plannerServices)
+	handlers := handlers.New(uploadService, plannerServices, semesterAdvisorService)
 	routes.SetUpRoutes(server, handlers)
 
 	if err := server.Run(":8080"); err != nil {

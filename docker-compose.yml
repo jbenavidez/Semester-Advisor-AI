@@ -68,12 +68,15 @@ services:
       OLLAMA_HOST: http://semester-advisor-ai-ollama:11434
 
     depends_on:
-      semester-advisor-ai-ollama:
-        condition: service_healthy
+      - semester-advisor-ai-ollama
 
     entrypoint: ["/bin/sh", "-c"]
 
     command: >
+      i=0;
+      until ollama list >/dev/null 2>&1 || [ $$i -ge 30 ]; do
+        i=$$((i+1)); sleep 1;
+      done;
       echo "Pulling llama3...";
       ollama pull llama3;
       echo "llama3 pulled successfully."
