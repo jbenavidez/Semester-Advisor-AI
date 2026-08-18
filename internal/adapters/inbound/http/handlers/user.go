@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"semester-advisor-ai/internal/domain"
 	"strconv"
@@ -43,14 +42,15 @@ func (h *Handlers) PlanSemester(c *gin.Context) {
 		courses[i] = course
 	}
 	//
-	//plan := h.plannerSevice.PlanSemester()(courses)
 	plan, err := h.semesterAdvisor.AnalyzeSemester(c.Request.Context(), courses)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	fmt.Println("complete_gondor", plan)
 
-	// Todo: return result
+	c.HTML(http.StatusOK, "semester_analysis.html", gin.H{
+		"PageTitle": "Semester Analysis",
+		"Plan":      plan,
+	})
 
 }
