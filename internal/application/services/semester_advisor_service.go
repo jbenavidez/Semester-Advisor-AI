@@ -8,17 +8,21 @@ import (
 	"semester-advisor-ai/internal/application/prompts"
 	"semester-advisor-ai/internal/domain"
 	"semester-advisor-ai/internal/ports"
+
+	"github.com/google/uuid"
 )
 
 type SemesterAdvisorService struct {
-	languageModel ports.LanguageModel
-	repo          ports.ProfessorReviewRepository
+	languageModel      ports.LanguageModel
+	repo               ports.ProfessorReviewRepository
+	semesterPlanMemory ports.SemesterPlanMemory
 }
 
-func NewSemesterAdvisorService(languageModel ports.LanguageModel, repo ports.ProfessorReviewRepository) *SemesterAdvisorService {
+func NewSemesterAdvisorService(languageModel ports.LanguageModel, repo ports.ProfessorReviewRepository, memoryplan ports.SemesterPlanMemory) *SemesterAdvisorService {
 	return &SemesterAdvisorService{
-		languageModel: languageModel,
-		repo:          repo,
+		languageModel:      languageModel,
+		repo:               repo,
+		semesterPlanMemory: memoryplan,
 	}
 }
 
@@ -55,26 +59,30 @@ func (s *SemesterAdvisorService) FormatProfessorReviews(reviews []domain.Profess
 	return formatted
 }
 
-func (s *SemesterAdvisorService) AnalyzeSemester(ctx context.Context, courses []domain.Course) (string, error) {
+func (s *SemesterAdvisorService) AnalyzeSemester(ctx context.Context, courses []domain.Course) (string, string, error) {
 
 	// get feedback from db
 	reviews, err := s.repo.GetReviewsForCourses(courses)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	// format reviews
 	formmattedReviews := s.FormatProfessorReviews(reviews)
 	courseData, err := json.Marshal(courses)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	// build prompt
 	prompt, err := prompts.BuildSemesterAdvisorPrompt(courseData, []byte(formmattedReviews))
 
 	answer, err := s.languageModel.Generate(ctx, prompt)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-
-	return answer, nil
+	// save anwer on redis
+	planID := uuid.NewString()
+	if err := s.semesterPlanMemory.StorePlan(ctx, planID, courses); err != nil {
+		return "", "", err
+	}
+	return answer, planID, nil
 }

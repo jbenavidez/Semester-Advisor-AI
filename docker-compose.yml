@@ -23,9 +23,12 @@ services:
       - ./uploads:/app/uploads
 
     depends_on:
-      - semester-advisor-ai-weaviate
-      - semester-advisor-ai-ollama
-      - semester-advisor-ai-redis
+      semester-advisor-ai-weaviate:
+        condition: service_started
+      semester-advisor-ai-ollama:
+        condition: service_healthy
+      semester-advisor-ai-redis:
+        condition: service_healthy
 
   semester-advisor-ai-redis:
     image: redis:7-alpine
@@ -39,6 +42,12 @@ services:
       - ./redis-data:/data
 
     command: redis-server --appendonly yes
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   semester-advisor-ai-ollama:
     image: ollama/ollama:latest
@@ -68,7 +77,8 @@ services:
       OLLAMA_HOST: http://semester-advisor-ai-ollama:11434
 
     depends_on:
-      - semester-advisor-ai-ollama
+      semester-advisor-ai-ollama:
+        condition: service_healthy
 
     entrypoint: ["/bin/sh", "-c"]
 

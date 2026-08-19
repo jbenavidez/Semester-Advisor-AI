@@ -42,7 +42,7 @@ func (h *Handlers) PlanSemester(c *gin.Context) {
 		courses[i] = course
 	}
 	//
-	plan, err := h.semesterAdvisor.AnalyzeSemester(c.Request.Context(), courses)
+	plan, planID, err := h.semesterAdvisor.AnalyzeSemester(c.Request.Context(), courses)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -51,6 +51,25 @@ func (h *Handlers) PlanSemester(c *gin.Context) {
 	c.HTML(http.StatusOK, "semester_analysis.html", gin.H{
 		"PageTitle": "Semester Analysis",
 		"Plan":      plan,
+		"PlanID":    planID,
 	})
 
+}
+
+func (h *Handlers) PlanSemesterAlternative(c *gin.Context) {
+	planID := c.PostForm("plan_id")
+	if planID == "" {
+		c.String(http.StatusBadRequest, "plan id is required")
+		return
+	}
+	plan, err := h.plannerService.PlanSemester(c.Request.Context(), planID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.HTML(http.StatusOK, "semester_alternatives.html", gin.H{
+		"PageTitle": "Better Semester Alternatives",
+		"Plan":      plan,
+		"PlanID":    planID,
+	})
 }
